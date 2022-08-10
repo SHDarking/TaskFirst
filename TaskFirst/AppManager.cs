@@ -10,8 +10,10 @@ namespace TaskFirst
     {
         private static MainProcessManager _processesManager = new();
         private static ProgramStatus _status = ProgramStatus.Stopped;
+        private static DateTime _startProgram;
         public static void StartProgram()
         {
+            _startProgram = DateTime.Now.Date;
             ConsoleMenu(); 
         }
 
@@ -56,6 +58,7 @@ namespace TaskFirst
                         }
                     }
                 }
+                UploadMetaLogByMidnight();
             }
         }
 
@@ -77,10 +80,35 @@ namespace TaskFirst
         private static void Exit()
         {
             Console.WriteLine("Exit from program");
+            Console.WriteLine(UpdloadMetaLogAtExit());
             _status = ProgramStatus.Exit;
         }
 
         public static ProgramStatus GetProgramStatus() => _status;
+
+        private static void UploadMetaLogByMidnight()
+        {
+            Logger logger = new Logger();
+            if(DateTime.Now.Date.Subtract(_startProgram).Days >= 1)
+            {
+                FileHandler.WriteLog(logger);
+                _startProgram = DateTime.Now.Date;
+                logger.ResetLogger();
+            }
+        }
+
+        private static string UpdloadMetaLogAtExit()
+        {
+            Logger logger = new Logger();
+            StringBuilder builder = new StringBuilder();
+            builder.AppendLine("parsed_files: " + logger.ParsedFiles.ToString());
+            builder.AppendLine("parsed_lines: " + logger.ParsedLines.ToString());
+            builder.AppendLine("found_errors: " + logger.FoundErrors.ToString());
+            builder.Append("invalid_files: [");
+            logger.InvalidFiles.ForEach(e => builder.Append(e + ','));
+            builder.Append("]");
+            return builder.ToString();
+        }
 
         public enum ProgramStatus
         {

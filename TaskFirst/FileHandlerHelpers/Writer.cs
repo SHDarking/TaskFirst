@@ -20,5 +20,10 @@ namespace TaskFirst.FileHandlerHelpers
                 await stream.WriteAsync(json);
             }
         }
+        public void WriteLogToFile(string path, Logger logger)
+        {
+            string log = new Parser().ParseLog(logger);
+            File.WriteAllText(path + "meta.log", log);
+        }
     }
 }

@@ -11,9 +11,11 @@ namespace TaskFirst.FileHandlerHelpers
     {
         private string _pattern = @"[a-zA-Z\s]+,[a-zA-Z\s]*,\s*\W\w+,\s*[a-zA-Z]+\s*\d+,\s*\d+\W,\s*\d+.\d+,\s*\d{4}-\d{2}-\d{2},\s*\W*\d+\W*,\s*\w+";
         private readonly Parser _parser = new Parser();
-        public List<InputModel>? Read(string path, FileHandler.FileExtension extension)
+        private string _path;
+        public List<InputModel> Read(string path, FileHandler.FileExtension extension)
         {
-            List<InputModel>? list = null;            
+            List<InputModel> list = new();
+            _path = path;
             using (StreamReader stream = new StreamReader(path))
             {
                 switch (extension)
@@ -33,25 +35,51 @@ namespace TaskFirst.FileHandlerHelpers
 
         private List<InputModel> ReadFromTxtToModel(StreamReader stream)
         {
-            List<InputModel> list = new();
+            Logger logger = new();
+            List <InputModel> list = new();
             while (!stream.EndOfStream)
             {
                 InputModel? model = _parser.StringParser(stream.ReadLine(), _pattern);
                 if (model != null)
+                {
                     list.Add(model);
+                    logger.IncreaseParsedLines();
+                }
+                else
+                {
+                    if (logger.InvalidFiles.All(e => _path != e))
+                    {
+                        logger.AddInvalidFile(_path);
+                    }
+                }
+                    
             }
+            logger.IncreaseParsedFiles();
             return list;
         }
 
         private List<InputModel> ReadFromCsvToModel(StreamReader stream)
         {
+            Logger logger = new();
             List<InputModel> list = new();
+            stream.ReadLine();
             while (!stream.EndOfStream)
             {
                 InputModel? model = _parser.StringParser(stream.ReadLine(), _pattern);
                 if (model != null)
+                {
                     list.Add(model);
+                    logger.IncreaseParsedLines();
+                }
+                else
+                {
+                    if (logger.InvalidFiles.All(e => _path != e))
+                    {
+                        logger.AddInvalidFile(_path);
+                    }
+                }
             }
+            logger.IncreaseParsedFiles();
             return list;
         }
  

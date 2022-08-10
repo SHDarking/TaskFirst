@@ -32,7 +32,7 @@ namespace TaskFirst
                 pathToInputFile = FileHandler.GetFileFromIndex();
                 if (pathToInputFile == null)
                 {
-                    _processStatus = ProcessStatus.IsStopped;
+                    Stop();
                 }
                 else
                 {

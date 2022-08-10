@@ -40,28 +40,24 @@ namespace TaskFirst
             return selectedFiles.First();
         }
 
-        public List<InputModel>? ReadFileToModel(string path)
+        public List<InputModel> ReadFileToModel(string path)
         {            
-            List<InputModel>? result = new List<InputModel>();
+            List<InputModel> result = new List<InputModel>();
             var extension = Path.GetExtension(path);
             FileExtension fileExtension;
             switch (extension)
             {
-                case "txt":
+                case ".txt":
                     fileExtension = FileExtension.txt;
                     break;
-                case "csv":
+                case ".csv":
                     fileExtension = FileExtension.csv;
                     break;
                 default:
                     fileExtension = FileExtension.txt;
                     break;
             }
-            result = new Reader().Read(path, fileExtension);
-            if (result == null)
-            {
-                // call logger 
-            }
+            result = new Reader().Read(path, fileExtension);            
             return result;
         }
 
@@ -111,6 +107,11 @@ namespace TaskFirst
             }
         }
         
+        public static void WriteLog(Logger logger)
+        {            
+            string pathToDirectory = ConfigManager.PathToOutputDirectory + "\\" + DateTime.Now.Date.AddDays(-1);
+            new Writer().WriteLogToFile(pathToDirectory, logger);
+        }
         
         public enum FileExtension
         {
