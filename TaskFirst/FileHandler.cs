@@ -10,57 +10,108 @@ namespace TaskFirst
 {
     public class FileHandler
     {
+        private static object locker = new object();
         private readonly string _pathToInputDirectory;
         private readonly string _pathToOutputDirectory;
-        private string _pathToInputFile;
-        private FileExtension _fileExtension;
+       
+        
 
         public FileHandler()
         {
             _pathToInputDirectory = ConfigManager.PathToInputDirectory;
             _pathToOutputDirectory = ConfigManager.PathToOutputDirectory;
         }
-        public FileHandler GetFileFromIndex()
+        public static string? GetFileFromIndex()
         {
-            // getting path to input file from index
-            var selectedFile = Directory.GetFiles(_pathToInputDirectory).First();
-            _pathToInputFile = selectedFile;
-            var fileExtension = Path.GetExtension(selectedFile);
-            switch (fileExtension)
+            List<string>? selectedFiles = null;
+            lock (locker)
             {
-                case "txt":
-                    _fileExtension = FileExtension.txt;
-                    break;
-                case "csv":
-                    _fileExtension= FileExtension.csv;
-                    break;
-                default:
-                    _fileExtension = FileExtension.txt;
-                    break;
+                Indexer indexer = Indexer.GetInstanceIndexer();
+                selectedFiles = Directory.GetFiles(ConfigManager.PathToInputDirectory)
+                    .Where(e => indexer.FilesInIndex.All(f => e != f))
+                    .Where(x => Path.GetExtension(x) == ".txt" || Path.GetExtension(x) == ".csv").ToList();
+                if (selectedFiles.Count == 0)
+                {
+                    return null;
+                }
+                
+                indexer.FilesInIndex.Add(selectedFiles.First());
             }
-            return this;
+            return selectedFiles.First();
         }
 
-        public List<InputModel>? ReadFileToModel()
-        {
+        public List<InputModel>? ReadFileToModel(string path)
+        {            
             List<InputModel>? result = new List<InputModel>();
-            result = new Reader().Read(_pathToInputFile, _fileExtension);
+            var extension = Path.GetExtension(path);
+            FileExtension fileExtension;
+            switch (extension)
+            {
+                case "txt":
+                    fileExtension = FileExtension.txt;
+                    break;
+                case "csv":
+                    fileExtension = FileExtension.csv;
+                    break;
+                default:
+                    fileExtension = FileExtension.txt;
+                    break;
+            }
+            result = new Reader().Read(path, fileExtension);
             if (result == null)
             {
                 // call logger 
             }
             return result;
         }
-        
-        
-        
 
-        public bool WriteFile(List<OutputModel> models, string path)
+        public void WriteToJsonFile(List<OutputModel> models)
         {
             Writer writer = new Writer();
-            return true;
+            writer.WriteModelToJsonFile(CreateJsonFileForWriting(),models);
         }
 
+        private string CreateJsonFileForWriting()
+        {
+            string nameOfTodayDirectory = DateTime.Now.Date.ToString("MM-dd-yyyy");
+            string pathToTodayDirectory = _pathToOutputDirectory + "\\" + nameOfTodayDirectory;
+            Directory.CreateDirectory(pathToTodayDirectory);
+            var files = Directory.GetFiles(pathToTodayDirectory).Where(e => Path.GetExtension(e) == ".json").ToList();
+            int indexOfFile = 1;
+            if (files.Count != 0)
+            {
+                indexOfFile = files.Count + 1;
+            }
+            string nameOfFile = $"output{indexOfFile}.json";
+            string pathToFile = pathToTodayDirectory + '\\' + nameOfFile;
+            File.Create(pathToFile).Close();
+            return pathToFile;
+
+        }
+
+        public static bool AreHaveNewSourceFiles()
+        {
+            Indexer indexer = Indexer.GetInstanceIndexer();
+            var files = Directory.GetFiles(ConfigManager.PathToInputDirectory)
+                .Where(e => Path.GetExtension(e) == ".txt" || Path.GetExtension(e) == ".csv").ToList();
+            var count = files.Count;
+            bool haveNewFiles = false;
+            if (files.Count != 0)
+            {
+                haveNewFiles = files.All(e => indexer.FilesInIndex.All(f => e != f));
+            }
+            return haveNewFiles;
+        }
+
+        public void DeleteInputFile(string path)
+        {
+            if (!string.IsNullOrEmpty(path))
+            {
+                File.Delete(path);
+            }
+        }
+        
+        
         public enum FileExtension
         {
             txt,

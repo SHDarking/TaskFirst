@@ -8,15 +8,9 @@ namespace TaskFirst.Models
 {
     public class Service
     {
-        public string Name { get; private set; }
-        public List<Payer> Payers { get; private set; }
-        public decimal Total { get; private set; }
+        public string Name { get;  set; }
+        public List<Payer> Payers { get;  set; }
+        public decimal Total { get;  set; }
 
-        public Service(string name, List<Payer> payers, decimal total)
-        {
-            Name = name;
-            Payers = payers;
-            Total = total;
-        }
     }
 }

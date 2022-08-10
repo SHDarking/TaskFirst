@@ -8,17 +8,10 @@ namespace TaskFirst.Models
 {
     public class Payer
     {
-        public string Name { get; private set; }
-        public decimal Payment { get; private set; }
-        public DateOnly Date { get; private set; }
-        public long AccountNumber { get; private set; }
+        public string Name { get;  set; }
+        public decimal Payment { get;  set; }
+        public DateTime Date { get;  set; }
+        public long AccountNumber { get;  set; }
 
-        public Payer(string name, decimal payment, DateOnly date, long accountNumber)
-        {
-            Name = name;
-            Payment = payment;
-            Date = date;
-            AccountNumber = accountNumber;
-        }
     }
 }
