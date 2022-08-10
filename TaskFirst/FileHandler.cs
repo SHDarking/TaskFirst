@@ -21,7 +21,7 @@ namespace TaskFirst
             _pathToInputDirectory = ConfigManager.PathToInputDirectory;
             _pathToOutputDirectory = ConfigManager.PathToOutputDirectory;
         }
-        public static string? GetFileFromIndex()
+        public static string? GetRawFiles()
         {
             List<string>? selectedFiles = null;
             lock (locker)
@@ -109,7 +109,7 @@ namespace TaskFirst
         
         public static void WriteLog(Logger logger)
         {            
-            string pathToDirectory = ConfigManager.PathToOutputDirectory + "\\" + DateTime.Now.Date.AddDays(-1);
+            string pathToDirectory = ConfigManager.PathToOutputDirectory + "\\" + DateTime.Now.Date.AddDays(-1).ToString("MM-dd-yyyy");
             new Writer().WriteLogToFile(pathToDirectory, logger);
         }
         

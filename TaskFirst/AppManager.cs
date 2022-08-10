@@ -25,7 +25,7 @@ namespace TaskFirst
             {
                 if (_status == ProgramStatus.Stopped)
                 {
-                    Console.WriteLine("1. Start program.\n2. Exit from program.\n");
+                    Console.WriteLine("1. Start program.\n2. Exit from program.");
                     string? inputedAnswer = Console.ReadLine();
                     if (!string.IsNullOrEmpty(inputedAnswer) && (inputedAnswer == "1" || inputedAnswer == "2"))
                     {
@@ -33,6 +33,8 @@ namespace TaskFirst
                         {
                             case 1:
                                 RunProcesses();
+                                Thread loggerUploadChecker = new Thread(UploadMetaLogByMidnight);
+                                loggerUploadChecker.Start();
                                 break;
                             case 2:
                                 Exit();
@@ -44,7 +46,7 @@ namespace TaskFirst
                 }
                 else if(_status == ProgramStatus.inProgress)
                 {
-                    Console.WriteLine("1. Stop program?\n");
+                    Console.WriteLine("1. Stop program?");
                     string? inputedAnswer = Console.ReadLine();
                     if (!string.IsNullOrEmpty(inputedAnswer) && inputedAnswer == "1")
                     {
@@ -58,7 +60,7 @@ namespace TaskFirst
                         }
                     }
                 }
-                UploadMetaLogByMidnight();
+                
             }
         }
 
@@ -88,12 +90,16 @@ namespace TaskFirst
 
         private static void UploadMetaLogByMidnight()
         {
-            Logger logger = new Logger();
-            if(DateTime.Now.Date.Subtract(_startProgram).Days >= 1)
+            while (_status != ProgramStatus.Exit)
             {
-                FileHandler.WriteLog(logger);
-                _startProgram = DateTime.Now.Date;
-                logger.ResetLogger();
+                if (DateTime.Now.Date.Subtract(_startProgram).Days >= 1)
+                {
+                    Logger logger = new Logger();
+                    FileHandler.WriteLog(logger);
+                    _startProgram = DateTime.Now.Date;
+                    logger.ResetLogger();
+                }
+                Thread.Sleep(60000);
             }
         }
 
