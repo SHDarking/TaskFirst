@@ -28,8 +28,7 @@ namespace TaskFirst
             string? pathToInputFile = null;
             if (_processStatus == ProcessStatus.InProgress)
             {
-                Console.WriteLine($"Process is running, Thread is {Thread.CurrentThread.Name}");
-                pathToInputFile = FileHandler.GetFileFromIndex();
+                pathToInputFile = FileHandler.GetRawFiles();
                 if (pathToInputFile == null)
                 {
                     Stop();
@@ -42,12 +41,10 @@ namespace TaskFirst
             }
             if (_processStatus == ProcessStatus.InProgress && inputList != null)
             {
-                Console.WriteLine($"Converting models, {Thread.CurrentThread.Name}");
                 outputList = _convertor.ConvertToOutputModel(inputList);
             }
             if (_processStatus == ProcessStatus.InProgress)
             {
-                Console.WriteLine($"Write converted data, {Thread.CurrentThread.Name}");
                 _fileHandler.WriteToJsonFile(outputList);
                 Indexer indexer = Indexer.GetInstanceIndexer();
                 indexer.FilesInIndex.Remove(pathToInputFile);
@@ -58,7 +55,6 @@ namespace TaskFirst
         public void Stop()
         {
             _processStatus = ProcessStatus.IsStopped;
-            Console.WriteLine("Process stopping");
         }
 
         enum ProcessStatus

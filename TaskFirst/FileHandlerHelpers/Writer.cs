@@ -23,7 +23,7 @@ namespace TaskFirst.FileHandlerHelpers
         public void WriteLogToFile(string path, Logger logger)
         {
             string log = new Parser().ParseLog(logger);
-            File.WriteAllText(path + "meta.log", log);
+            File.WriteAllText(path + "\\meta.log", log);
         }
     }
 }
